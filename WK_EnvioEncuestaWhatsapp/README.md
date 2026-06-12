@@ -138,4 +138,4 @@ Hola [Nombre del Cliente] 👋
 
 ## 👤 Autor
 
-Desarrollado como parte del portafolio de automatizaciones y agentes IA
+Genaro Pol Nolazco- Consultor IA y Especialista en Infraestructura con IA 
