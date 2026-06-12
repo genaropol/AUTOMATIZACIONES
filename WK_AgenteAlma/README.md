@@ -40,164 +40,44 @@ Los sistemas tradicionales de agendamiento médico requieren que el personal ati
 │  Google Calendar │ Google Sheets │ Gmail                     │
 └─────────────────────────────────────────────────────────────┘
 ```
+¿Qué puede hacer Alma?
 
+📅 Agendar una citaGuía al paciente paso a paso, verifica disponibilidad y registra todo automáticamente
+🔄 Reprogramar una citaBusca la cita existente del paciente y la mueve a la nueva fecha
+❌ Cancelar una citaAnula la cita y actualiza todos los registros
+🔍 Consultar disponibilidadRevisa la agenda en tiempo real antes de confirmar cualquier horario
+📧 Enviar confirmaciónManda un correo automático al paciente con los detalles de su cita
 ---
+¿Con qué sistemas se conecta?
 
-## 🚀 Endpoints de la API
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/` | Información del agente (nombre, versión) |
-| `GET` | `/health` | Health check del servidor |
-| `POST` | `/chat` | Enviar mensaje al agente y recibir respuesta |
-
-### Ejemplo de uso — POST /chat
-
-**Request:**
-```json
-{
-  "session_id": "whatsapp:+51999999999",
-  "message": "Hola, quiero agendar una cita para el jueves"
-}
-```
-
-**Response:**
-```json
-{
-  "response": "¡Hola! Soy Alma. ¿Me puedes indicar tu DNI para verificar tus datos?",
-  "session_id": "whatsapp:+51999999999"
-}
-```
-
-> El `session_id` identifica la conversación. La memoria persiste en PostgreSQL entre reinicios del servidor.
-
+Google CalendarVer disponibilidad, crear, modificar y eliminar citas
+Google SheetsRegistrar y actualizar los datos de los pacientes
+GmailEnviar confirmaciones automáticas por correo
+WhatsAppCanal de conversación con el paciente
 ---
-
-## 🛠️ Herramientas del Agente
-
-El agente dispone de 8 herramientas que invoca de forma autónoma según la necesidad:
-
-| Herramienta | Acción |
-|-------------|--------|
-| `availability_calendar` | Verifica disponibilidad en Google Calendar |
-| `create_event` | Crea una nueva cita en Google Calendar |
-| `update_event` | Reprograma una cita existente |
-| `delete_event` | Anula y elimina una cita |
-| `read_sheet` | Busca datos del paciente en Google Sheets por DNI |
-| `append_sheet` | Registra una nueva cita en Google Sheets |
-| `update_sheet` | Actualiza el estado de una cita en Google Sheets |
-| `send_email` | Envía confirmación por correo al paciente |
-
----
-
-## 💬 Ejemplo de Conversación
+¿Qué gana tu consultorio?
+⏱️ Ahorro de tiempo — el personal deja de atender manualmente cada solicitud de cita
+🌙 Disponible 24/7 — los pacientes pueden agendar en cualquier momento, incluso fuera de horario
+🚫 Menos errores — los registros se actualizan automáticamente, sin datos mal anotados
+😊 Mejor experiencia — el paciente recibe respuesta inmediata sin esperar
+📊 Todo registrado — cada cita queda guardada en Google Sheets para reportes y seguimiento
 
 ```
-👤 Usuario: "Quiero agendar una cita para el viernes"
-🤖 Alma:    "¡Hola! Soy Alma. ¿Me puedes indicar tu DNI?"
-
-👤 Usuario: "12345678"
-🤖 Alma:    "Hola María. Tengo disponibilidad el viernes 20/06
-             a las 09:00, 11:00 y 14:30 hs. ¿Cuál prefieres?"
-
-👤 Usuario: "Las 11"
-🤖 Alma:    "✅ Listo. Tu cita está agendada para el viernes 20/06
-             a las 11:00 hs. Te envié la confirmación a tu correo."
-```
-
+Alma está desplegada y en producción en un servidor propio, disponible en todo momento.
+Cualquier sistema o canal puede conectarse a ella enviando simplemente el mensaje del paciente.
 ---
+📁 Archivos del Repositorio
 
-## 🔧 Stack Técnico
-
-| Tecnología | Uso |
-|------------|-----|
-| **Python 3.12** | Lenguaje base |
-| **LangGraph** | Grafo de estado con memoria persistente para el agente |
-| **Claude Sonnet (Anthropic)** | Modelo de lenguaje del agente |
-| **FastAPI + Uvicorn** | API REST de alto rendimiento |
-| **PostgreSQL + PostgresSaver** | Persistencia de sesiones conversacionales |
-| **Docker** | Contenerización para despliegue |
-| **Coolify** | Plataforma de despliegue con auto-deploy desde GitHub |
-| **n8n** | Orquestador de integraciones (Calendar, Sheets, Gmail) |
-| **pytest + httpx** | Tests de integración |
-
----
-
-## 📦 Despliegue en Producción
-
-El proyecto está **desplegado y en funcionamiento** en un servidor propio usando **Coolify**:
-
-- Contenerizado con **Docker**
-- Auto-deploy activado: cada `push` a `main` despliega automáticamente
-- API pública disponible en: `https://appagentappointment.iainnova.net`
-- Documentación Swagger en: `https://appagentappointment.iainnova.net/docs`
-
----
-
-## ⚙️ Variables de Entorno Requeridas
-
-```env
-ANTHROPIC_API_KEY=      # API key de Anthropic (Claude)
-DATABASE_URL=           # URL de conexión PostgreSQL
-N8N_WEBHOOK_BASE_URL=   # URL base de tu instancia de n8n
-```
-
----
-
-## 🏃 Cómo Correr Localmente
-
-```bash
-# 1. Clonar el repositorio y crear entorno virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-# 2. Instalar dependencias
-pip install -r requirements.txt
-
-# 3. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus valores
-
-# 4. Levantar el servidor
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Con Docker:
-```bash
-docker build -t agente-alma .
-docker run -p 8000:8000 --env-file .env agente-alma
-```
-
----
-
-## 📊 Resultado / Impacto
-
-- ✅ **En producción real** — API desplegada y consumible
-- ✅ **Memoria persistente** — el agente recuerda el contexto entre mensajes
-- ✅ **Multi-canal** — cualquier cliente puede consumir la API (WhatsApp, web, app)
-- ✅ **Acciones reales** — no solo responde, sino que ejecuta: agenda, modifica, cancela
-- ✅ **Auto-deploy** — CI/CD configurado desde GitHub hacia el servidor
-
----
-
-## 📁 Archivos del Repositorio
-
-```
 📁 WK_AgenteAlma/
-├── 📄 README.md               ← Este archivo
-├── 📄 Dockerfile
-├── 📄 requirements.txt
-├── 📄 .env.example
-├── 📁 app/
-│   ├── main.py                ← FastAPI app
-│   ├── agent.py               ← Lógica del agente LangGraph
-│   └── tools.py               ← Definición de las 8 herramientas
-└── 📁 tests/
-    └── test_chat.py
-```
+├── 📄 README.md          ← Este archivo
+├── 📄 Dockerfile         ← Configuración del servidor
+├── 📄 requirements.txt   ← Dependencias del proyecto
+├── 📄 .env.example       ← Variables de configuración
+└── 📁 app/
+    ├── main.py           ← Punto de entrada de la API
+    ├── agent.py          ← Cerebro del agente Alma
+    └── tools.py          ← Acciones que Alma puede ejecutar
 
 ---
-
 ## 👤 Autor
 Genaro Pol Nolazco- Consultor IA y Especialista en Infraestructura con IA 
