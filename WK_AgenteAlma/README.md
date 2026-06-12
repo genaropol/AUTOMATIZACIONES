@@ -200,7 +200,4 @@ docker run -p 8000:8000 --env-file .env agente-alma
 ---
 
 ## 👤 Autor
-Genaro Pol Nolazco
-
-Desarrollado como parte del portafolio de automatizaciones e IA.  
-Si tienes dudas o quieres implementar algo similar, no dudes en contactarme.
+Genaro Pol Nolazco- Consultor IA y Especialista en Infraestructura con IA 
