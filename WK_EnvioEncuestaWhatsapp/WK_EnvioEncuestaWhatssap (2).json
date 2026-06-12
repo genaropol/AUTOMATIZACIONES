@@ -1,0 +1,508 @@
+{
+  "name": "WK_EnvioEncuestaWhatssap",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -100,
+        -180
+      ],
+      "id": "d9a6c1d9-c764-454e-8416-be26bfc9dbee",
+      "name": "Recorre 1 a 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "011e80b0-9ca8-4fb9-b2e9-7971240578e2",
+              "name": "telefono_movil",
+              "value": "=+549{{ $json.Telefono }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        180,
+        -160
+      ],
+      "id": "e2fdbc35-3502-4429-b74a-b896016cd1fc",
+      "name": "Agrega el + al numero"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1738a3b6-9a7c-4cda-ba47-61972d7e6a93",
+              "name": "Mensaje",
+              "value": "=Hola  {{ $('Recorre 1 a 1').item.json.Cliente }}\n\n🐶💙 ¡Gracias por visitar Veterinaria Viviana PetShop! 🐾 Tu opinión es muy importante para nosotros.\n\n📋 Te invitamos a responder este breve cuestionario para seguir mejorando y brindarte una experiencia aún mejor. ¡Nos encantara conocer tu opinión! 😊✨\n\n🔗 https://docs.google.com/forms/d/e/1FAIpQLSfnZlPKXfU5OiDKpS_HbXlm-DWKo5XdxkaxtIyHR4Vah056RQ/viewform?usp=header\n\n¡Esperamos verte pronto! 🐶🐱💖",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        -160
+      ],
+      "id": "356e20b1-c3e8-4c8b-babc-b1e36d8fc9db",
+      "name": "Gestiona el mensaje"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener los datos de entrada\nconst items = $input.all();\n\nreturn items.map(item => {\n    // Acceder al contenido del mensaje del elemento actual\n    let text = item.json.Mensaje;\n\n    // Eliminar los saltos de página dobles y normalizar\n    text = text.replace(/\\n\\n/g, '\\n').replace(/\\n/g, '\\\\n');\n\n    // Retornar el objeto modificado\n    return {\n        json: {\n            ...item.json, // Mantiene otros datos del objeto original\n            message: {\n                ...item.json.message,\n                content: text\n            }\n        }\n    };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "id": "6df9aa7f-5155-4ea7-96c7-195f48796332",
+      "name": "Corrige mensaje json"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://appevolutionapi.iainnova.net/message/sendText/GenaroNolazco",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "D0BEB40BAF02-464D-B0B2-6462FEA29C9D"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Agrega el + al numero').item.json.telefono_movil }}\",\n  \"text\": \"{{ $json.message.content }}\"\n}\n ",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        120
+      ],
+      "id": "1a97b700-61bd-4175-b502-ba7b2a6a0aaf",
+      "name": "ApiEvolution-Enviomensaje",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "veterinaria_viviana_maestro",
+        "limit": 1,
+        "filter": {
+          "whatToSearch": "files",
+          "fileTypes": [
+            "application/vnd.google-apps.spreadsheet"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1280,
+        -120
+      ],
+      "id": "398f24b0-e666-42bc-a582-0cb274212409",
+      "name": "Busca GoogleSheet en drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "HIlCX840Bfoejf7r",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1500,
+        -380
+      ],
+      "id": "361e0555-abe0-47cc-b49b-e4afac51390d",
+      "name": "Ejecuta 12 mediodia"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PrimeraHoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19_fG2sDDIrb4lfipmeSCQT2RNXuo_deqcAuf5S9Hre4/edit#gid=0"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -940,
+        -120
+      ],
+      "id": "40d760d2-a6e6-4fdd-bad3-6e5b7e9257b9",
+      "name": "SheetMaestro",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vmdv1ZeVLzwJCXGQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "clientes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gkgBMcBtNYW53Gj9QWDub41uFuWqbVMHTBQ_TGWAW8U/edit#gid=0"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -920,
+        220
+      ],
+      "id": "a5c45b76-61a1-47f4-87d7-c730fb791726",
+      "name": "Sheet Visita del dia",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vmdv1ZeVLzwJCXGQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "veterinaria_viviana_visita",
+        "filter": {
+          "whatToSearch": "files",
+          "fileTypes": [
+            "application/vnd.google-apps.spreadsheet"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1260,
+        220
+      ],
+      "id": "bd5a38d8-7fa3-451c-8a7a-2e8bd1f5dc98",
+      "name": "Google Drive",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "HIlCX840Bfoejf7r",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        120
+      ],
+      "id": "9d8d5ca6-8245-4350-a815-369cf2b044fd",
+      "name": "Espera 30 segundos",
+      "webhookId": "e8c15e65-0b82-4a4c-9135-912e16b98072"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sheetVisita = $('Sheet Visita del dia').all().flatMap(item => item.json);\nconst sheetMaestro = $('SheetMaestro').all().flatMap(item => item.json);\n\nreturn sheetVisita.map(visita => {\n    // Buscar coincidencia en SheetMaestro\n    const clienteEncontrado = sheetMaestro.find(maestro => \n        maestro.Cliente.toLowerCase().trim() === visita.Cliente.toLowerCase().trim()\n    );\n    \n    return {\n        json: {\n            Cliente: clienteEncontrado ? clienteEncontrado.Cliente : \"No Existe\",\n            Telefono: clienteEncontrado ? clienteEncontrado.Telefono : \"No Existe\",\n            Veterinario: clienteEncontrado ? clienteEncontrado.Veterinario : \"No Existe\"\n        }\n    };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        220
+      ],
+      "id": "9d7b40c4-a4a2-4f79-8102-1afd6b566567",
+      "name": "Codigo Busqueda Coincidencia"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5c959122-a618-4ba4-8032-5f93a7aab8bf",
+              "leftValue": "={{ $json.Cliente }}",
+              "rightValue": "No Existe",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "6b33d0f6-93e0-401a-95e2-8f7ef152abb7",
+              "leftValue": "={{ $json.Veterinario }}",
+              "rightValue": "=ASISTENTES",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -500,
+        0
+      ],
+      "id": "2fce3747-e93f-4a91-89aa-86d1b9003f7a",
+      "name": "Filtro clientes existentes y veterinarios"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Cliente",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "Cliente,, Telefono",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        -180
+      ],
+      "id": "fe4211b4-1d8a-4876-acba-9c01c5892fb9",
+      "name": "Segmentar cada cliente"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Recorre 1 a 1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Agrega el + al numero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega el + al numero": {
+      "main": [
+        [
+          {
+            "node": "Gestiona el mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gestiona el mensaje": {
+      "main": [
+        [
+          {
+            "node": "Corrige mensaje json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Corrige mensaje json": {
+      "main": [
+        [
+          {
+            "node": "ApiEvolution-Enviomensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ApiEvolution-Enviomensaje": {
+      "main": [
+        [
+          {
+            "node": "Espera 30 segundos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca GoogleSheet en drive": {
+      "main": [
+        [
+          {
+            "node": "SheetMaestro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecuta 12 mediodia": {
+      "main": [
+        [
+          {
+            "node": "Busca GoogleSheet en drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SheetMaestro": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet Visita del dia": {
+      "main": [
+        [
+          {
+            "node": "Codigo Busqueda Coincidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Sheet Visita del dia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera 30 segundos": {
+      "main": [
+        [
+          {
+            "node": "Recorre 1 a 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Codigo Busqueda Coincidencia": {
+      "main": [
+        [
+          {
+            "node": "Filtro clientes existentes y veterinarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro clientes existentes y veterinarios": {
+      "main": [
+        [
+          {
+            "node": "Segmentar cada cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Segmentar cada cliente": {
+      "main": [
+        [
+          {
+            "node": "Recorre 1 a 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "1c1a48ea-8a8f-4190-9b1b-f8d0215de67d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "380752d314479ffa5c8e1d64ff13506afbb86bb3829db6456cab038b60eca371"
+  },
+  "id": "BYpSpNGhucgngJif",
+  "tags": []
+}
