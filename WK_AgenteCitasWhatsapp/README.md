@@ -187,5 +187,4 @@ El agente está instruido con un **prompt de sistema detallado** que le permite:
 
 ## 👤 Autor
 
-Desarrollado como parte del portafolio de automatizaciones con **n8n**.  
-Si tienes dudas o quieres implementar algo similar, no dudes en contactarme.
+Genaro Pol Nolazco- Consultor IA y Especialista en Infraestructura con IA 
